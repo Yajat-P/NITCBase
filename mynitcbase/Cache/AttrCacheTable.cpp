@@ -220,3 +220,90 @@ int AttrCacheTable::resetSearchIndex(int relId, int attrOffset) {
   // return the value returned by setSearchIndex
   return ret;
 }
+int AttrCacheTable::setAttrCatEntry(int relId, char attrName[ATTR_SIZE], AttrCatEntry *attrCatBuf) {
+
+  if(relId<0 || relId>=MAX_OPEN) {
+    return E_OUTOFBOUND;
+  }
+
+  if(attrCache[relId]==nullptr) {
+    return E_RELNOTOPEN;
+  }
+
+  for(AttrCacheEntry *attrCacheBuf= attrCache[relId]; attrCacheBuf!=nullptr; attrCacheBuf= attrCacheBuf->next)
+  {
+    if(strcmp(attrCacheBuf->attrCatEntry.attrName, attrName)==0)
+    {
+      // copy the attrCatBuf to the corresponding Attribute Catalog entry in
+      // the Attribute Cache Table.
+      strcpy(attrCacheBuf->attrCatEntry.attrName, attrCatBuf->attrName);
+      strcpy(attrCacheBuf->attrCatEntry.relName, attrCatBuf->relName);
+
+      attrCacheBuf->attrCatEntry.attrType= attrCatBuf->attrType;
+      attrCacheBuf->attrCatEntry.offset= attrCatBuf->offset;
+      attrCacheBuf->attrCatEntry.primaryFlag= attrCatBuf->primaryFlag;
+      attrCacheBuf->attrCatEntry.rootBlock = attrCatBuf->rootBlock;
+      
+      
+
+      // set the dirty flag of the corresponding Attribute Cache entry in the
+      // Attribute Cache Table.
+      attrCacheBuf->dirty = true;
+
+      return SUCCESS;
+    }
+  }
+
+  return E_ATTRNOTEXIST;
+}
+int AttrCacheTable::setAttrCatEntry(int relId, int attrOffset, AttrCatEntry *attrCatBuf) {
+
+  if(relId<0 || relId>=MAX_OPEN) {
+    return E_OUTOFBOUND;
+  }
+
+  if(attrCache[relId]==nullptr) {
+    return E_RELNOTOPEN;
+  }
+
+  for(AttrCacheEntry *attrCacheBuf= attrCache[relId]; attrCacheBuf!=nullptr; attrCacheBuf= attrCacheBuf->next)
+  {
+    if(attrCacheBuf->attrCatEntry.offset == attrOffset)
+    {
+      // copy the attrCatBuf to the corresponding Attribute Catalog entry in
+      // the Attribute Cache Table.
+      strcpy(attrCacheBuf->attrCatEntry.attrName, attrCatBuf->attrName);
+      strcpy(attrCacheBuf->attrCatEntry.relName, attrCatBuf->relName);
+
+      attrCacheBuf->attrCatEntry.attrType= attrCatBuf->attrType;
+      attrCacheBuf->attrCatEntry.offset= attrCatBuf->offset;
+      attrCacheBuf->attrCatEntry.primaryFlag= attrCatBuf->primaryFlag;
+      attrCacheBuf->attrCatEntry.rootBlock = attrCatBuf->rootBlock;
+      
+      
+
+      // set the dirty flag of the corresponding Attribute Cache entry in the
+      // Attribute Cache Table.
+      attrCacheBuf->dirty = true;
+
+      return SUCCESS;
+    }
+  }
+
+  return E_ATTRNOTEXIST;
+}
+
+void AttrCacheTable::attrCatEntryToRecord(AttrCatEntry *attrCatEntry, union Attribute record[ATTRCAT_NO_ATTRS])
+{
+        strcpy(record[ATTRCAT_ATTR_NAME_INDEX].sVal, attrCatEntry->attrName);
+        strcpy(record[ATTRCAT_REL_NAME_INDEX].sVal, attrCatEntry->relName);
+
+        record[ATTRCAT_OFFSET_INDEX].nVal = (int)attrCatEntry->offset;
+        record[ATTRCAT_PRIMARY_FLAG_INDEX].nVal = (int)attrCatEntry->primaryFlag;
+        record[ATTRCAT_ROOT_BLOCK_INDEX].nVal = (int)attrCatEntry->rootBlock;
+        record[ATTRCAT_ATTR_TYPE_INDEX].nVal = (int)attrCatEntry->attrType;
+
+
+
+
+}
